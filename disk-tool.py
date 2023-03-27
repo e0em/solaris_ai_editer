@@ -13,14 +13,17 @@ if __name__ == "__main__":
     s = scn.Screen()
     import os
 
-    img_path = "./files/"
-    img_list = os.listdir(img_path)
+    dev_disk = "/dev/"
+    disk_list = []
+    for file in os.listdir(dev_disk):
+        if file.startswith("sd"):
+            disk_list.append(file)
 
     # with open('testImagelist.txt', 'w') as f:
     #     for img_name in img_list:
     #         f.write(img_name + '\n')
     # Set the list of all available DropDown choices
-    choices = img_list
+    choices = disk_list
 
     try:
         s.init_tty()
@@ -32,10 +35,10 @@ if __name__ == "__main__":
 
         # DropDown and ListBox widgets
         d.add(1, 1, "選擇硬碟:")
-        w_dropdown = wgs.WDropDown(15, ["03", "04", "05"], dropdown_h=6)
+        w_dropdown = wgs.WDropDown(15, ["sda", "sdb", "sdc"], dropdown_h=6)
         d.add(11, 1, w_dropdown)
         d.add(1, 2, "選擇檢測:")
-        w_dropdown_hosts = wgs.WDropDown(
+        w_dropdown_host = wgs.WDropDown(
             24,
             [
                 "Read All Disk",
@@ -45,7 +48,7 @@ if __name__ == "__main__":
             ],
             dropdown_h=6,
         )
-        d.add(11, 2, w_dropdown_hosts)
+        d.add(11, 2, w_dropdown_host)
 
         d.add(1, 3, "List:")
         w_listbox = wgs.WListBox(24, 8, choices)
@@ -81,3 +84,5 @@ if __name__ == "__main__":
         s.deinit_tty()
 
     print("Result:", w_listbox.get_cur_line())
+    print("Result:", w_dropdown_host.get_cur_line())
+    os.system("sudo dd of=/dev/null if=/dev/sda3 status=progress")
