@@ -84,5 +84,5 @@ if __name__ == "__main__":
         s.deinit_tty()
 
     print("Result:", w_listbox.get_cur_line())
-    print("Result:", w_dropdown_host.get_cur_line())
+    print("Result:", w_dropdown_host.get())
     os.system("sudo dd of=/dev/null if=/dev/sda3 status=progress")
