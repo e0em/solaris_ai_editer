@@ -10,8 +10,10 @@ import picotui.defs as defs
 
 
 if __name__ == "__main__":
-    s = scn.Screen()
     import os
+    import subprocess
+    import json
+    s = scn.Screen()
 
     dev_disk = "/dev/"
     disk_list = []
@@ -19,11 +21,17 @@ if __name__ == "__main__":
         if file.startswith("sd"):
             disk_list.append(file)
 
-    # with open('testImagelist.txt', 'w') as f:
-    #     for img_name in img_list:
-    #         f.write(img_name + '\n')
-    # Set the list of all available DropDown choices
     choices = disk_list
+    disks_info = subprocess.check_output("sudo lshw -c disk -json -quiet", shell=True)
+    disks_info_dict = json.loads(disks_info)
+    disks_logicalname = []
+    for i in disks_info_dict:
+        print(i["product"],i["logicalname"],i["description"])
+        if isinstance(i["logicalname"], list):
+            disks_logicalname.append(i["logicalname"][0])
+        else:
+            disks_logicalname.append(i["logicalname"])
+
 
     try:
         s.init_tty()
@@ -35,7 +43,7 @@ if __name__ == "__main__":
 
         # DropDown and ListBox widgets
         d.add(1, 1, "選擇硬碟:")
-        w_dropdown = wgs.WDropDown(15, ["sda", "sdb", "sdc"], dropdown_h=6)
+        w_dropdown = wgs.WDropDown(15, disks_logicalname, dropdown_h=6)
         d.add(11, 1, w_dropdown)
         d.add(1, 2, "選擇檢測:")
         w_dropdown_host = wgs.WDropDown(
@@ -84,5 +92,6 @@ if __name__ == "__main__":
         s.deinit_tty()
 
     print("Result:", w_listbox.get_cur_line())
-    print("Result:", w_dropdown_host.get())
-    os.system("sudo dd of=/dev/null if=/dev/sda3 status=progress")
+    print("Result:", w_dropdown_host.items[w_dropdown_host.get()])
+    # print(output_dict)
+    # os.system("sudo dd of=/dev/null if=/dev/sda3 status=progress")
