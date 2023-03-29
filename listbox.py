@@ -80,8 +80,8 @@ if __name__ == "__main__":
         b = wgs.WButton(8, "OK")
         d.add(2, 10, b)
         b.finish_dialog = "ACTION_OK"
-
-        d.add(12, 10, wgs.WButton(8, "Cancel"))
+        b = wgs.WButton(8, "Cancel")
+        d.add(12, 10, b)
         b.finish_dialog = "ACTION_CANCEL"
 
         res = d.loop()
