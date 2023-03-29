@@ -7,7 +7,16 @@ import picotui.widgets as wgs
 
 # from picotui.defs import C_B_WHITE, C_WHITE, C_B_BLUE, C_BLACK
 import picotui.defs as defs
-
+def linux_cmd(command):
+    import subprocess
+    output = subprocess.check_output(command, shell=True)
+    return output.decode()
+def linux_cmd_json_dict(command):
+    import json
+    output = linux_cmd(command)
+    return json.loads(output)
+# print(linux_cmd("sudo fdisk -l"))
+# print(linux_cmd_json_dict("sudo lshw -c disk -json"))
 
 if __name__ == "__main__":
     import os
@@ -22,15 +31,14 @@ if __name__ == "__main__":
             disk_list.append(file)
 
     choices = disk_list
-    disks_info = subprocess.check_output("sudo lshw -c disk -json -quiet", shell=True)
-    disks_info_dict = json.loads(disks_info)
-    disks_logicalname = []
+    disks_info_dict = linux_cmd_json_dict("sudo lshw -c disk -json -quiet")
+    disks_logicalname_dict = {}
     for i in disks_info_dict:
         print(i["product"],i["logicalname"],i["description"])
         if isinstance(i["logicalname"], list):
-            disks_logicalname.append(i["logicalname"][0])
+            disks_logicalname_dict[i["logicalname"][0]] = {"product":i["product"],"description":i["description"]}
         else:
-            disks_logicalname.append(i["logicalname"])
+            disks_logicalname_dict[i["logicalname"]] = {"product":i["product"],"description":i["description"]}
 
 
     try:
@@ -43,23 +51,12 @@ if __name__ == "__main__":
 
         # DropDown and ListBox widgets
         d.add(1, 1, "選擇硬碟:")
-        w_dropdown = wgs.WDropDown(15, disks_logicalname, dropdown_h=6)
-        d.add(11, 1, w_dropdown)
-        d.add(1, 2, "選擇檢測:")
-        w_dropdown_host = wgs.WDropDown(
-            24,
-            [
-                "Read All Disk",
-                "Write All Disk",
-                "mke2fs Disk",
-                "Read SMART info",
-            ],
-            dropdown_h=6,
-        )
-        d.add(11, 2, w_dropdown_host)
+        w_dropdown_target_disk = wgs.WDropDown(15, ["All"] + list(disks_logicalname_dict.keys()), dropdown_h=6)
+        d.add(11, 1, w_dropdown_target_disk)
+
 
         d.add(1, 3, "List:")
-        w_listbox = wgs.WListBox(24, 8, choices)
+        w_listbox = wgs.WListBox(24, 6, choices)
         d.add(1, 4, w_listbox)
 
         # Filter the ListBox based on the DropDown selection
@@ -75,13 +72,26 @@ if __name__ == "__main__":
             w_listbox.row = 0
             w_listbox.set_items(new_choices)
 
-        w_dropdown.on("changed", dropdown_changed)
+        w_dropdown_target_disk.on("changed", dropdown_changed)
 
+        d.add(1, 10, "選擇檢測:")
+        w_dropdown_test_type = wgs.WDropDown(
+            24,
+            [
+                "Read All Disk",
+                "Write All Disk",
+                "mke2fs Disk",
+                "Read SMART info",
+            ],
+            dropdown_h=6,
+        )
+
+        d.add(11, 10, w_dropdown_test_type)
         b = wgs.WButton(8, "OK")
-        d.add(2, 10, b)
+        d.add(2, 12, b)
         b.finish_dialog = "ACTION_OK"
         b = wgs.WButton(8, "Cancel")
-        d.add(12, 10, b)
+        d.add(12, 12, b)
         b.finish_dialog = "ACTION_CANCEL"
 
         res = d.loop()
@@ -92,6 +102,10 @@ if __name__ == "__main__":
         s.deinit_tty()
 
     print("Result:", w_listbox.get_cur_line())
-    print("Result:", w_dropdown_host.items[w_dropdown_host.get()])
+    print("Result:", w_dropdown_target_disk.items[w_dropdown_target_disk.get()])
     # print(output_dict)
     # os.system("sudo dd of=/dev/null if=/dev/sda3 status=progress")
+    # os.system("sudo smartctl -a /dev/sda")
+    # os.system("sudo fdisk -l")
+
+
