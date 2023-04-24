@@ -17,7 +17,13 @@ def linux_cmd_json_dict(command):
     return json.loads(output)
 # print(linux_cmd("sudo fdisk -l"))
 # print(linux_cmd_json_dict("sudo lshw -c disk -json"))
-
+hdd_test_cmd_smartctl = "sudo smartctl -x /dev/cdrom -j"
+hdd_test_cmd_partition_info = "sudo sgdisk -p /dev/sda"
+hdd_test_cmd_clean_disk_partition_head = "sudo dd if=/dev/zero of=/dev/sdc status=progress bs=512 count=34"
+hdd_test_cmd_clean_disk_partition_tail = "sudo dd if=/dev/zero of=/dev/sdc bs=512 count=34 seek=$((`sudo /sbin/blockdev --getsz /dev/sdb` - 34))"
+hdd_test_cmd_read_whole_disk = "sudo dd if=/dev/sdc of=/dev/null status=progress bs=256M conv=sync,noerror"
+hdd_test_cmd_write_whole_disk = "sudo dd if=/dev/zero of=/dev/sdc status=progress bs=256M conv=sync,noerror"
+hdd_test_cmd_disk_device_list = "sudo lshw -c disk -short -quiet |grep disk|cut -c 22-33,49-"
 if __name__ == "__main__":
     import os
     import subprocess
