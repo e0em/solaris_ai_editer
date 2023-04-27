@@ -14,8 +14,9 @@ def linux_cmd(command):
     import subprocess
     print(command)
     # output = subprocess.check_output(command, shell=True)
-    output = "excute:" + command + "\n"
-    return output.decode()
+    output = "excute:" + command 
+    # return output.decode()
+    return output
 
 
 def linux_cmd_json_dict(command):
@@ -26,7 +27,9 @@ def linux_cmd_json_dict(command):
 
 
 def linux_all_disk_list():
-    output = linux_cmd(hdd_test_cmd_disk_device_list).split("\n")
+    import subprocess
+    result = subprocess.check_output(hdd_test_cmd_disk_device_list, shell=True)
+    output = result.decode().split("\n")
     print(output)
     return output
 
@@ -52,7 +55,7 @@ def hdd_test_compose(disk_name, action):
     elif action == "format_whole_disk":
         return hdd_test_cmd_format_whole_disk.format(device_name=disk_name)
     elif action == "smartctl":
-        return hdd_test_cmd_smartctl.format(device_name=disk_name)"
+        return hdd_test_cmd_smartctl.format(device_name=disk_name)
     else:
         return ""
 if __name__ == "__main__":
