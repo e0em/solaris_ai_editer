@@ -7,21 +7,28 @@ import picotui.widgets as wgs
 
 # from picotui.defs import C_B_WHITE, C_WHITE, C_B_BLUE, C_BLACK
 import picotui.defs as defs
+
+
 def linux_cmd(command):
     import subprocess
+
     output = subprocess.check_output(command, shell=True)
     return output.decode()
+
+
 def linux_cmd_json_dict(command):
     import json
+
     output = linux_cmd(command)
     return json.loads(output)
+
+
 # print(linux_cmd("sudo fdisk -l"))
 # print(linux_cmd_json_dict("sudo lshw -c disk -json"))
 
 if __name__ == "__main__":
     import os
-    import subprocess
-    import json
+
     s = scn.Screen()
 
     dev_disk = "/dev/"
@@ -34,12 +41,17 @@ if __name__ == "__main__":
     disks_info_dict = linux_cmd_json_dict("sudo lshw -c disk -json -quiet")
     disks_logicalname_dict = {}
     for i in disks_info_dict:
-        print(i["product"],i["logicalname"],i["description"])
+        print(i["product"], i["logicalname"], i["description"])
         if isinstance(i["logicalname"], list):
-            disks_logicalname_dict[i["logicalname"][0]] = {"product":i["product"],"description":i["description"]}
+            disks_logicalname_dict[i["logicalname"][0]] = {
+                "product": i["product"],
+                "description": i["description"],
+            }
         else:
-            disks_logicalname_dict[i["logicalname"]] = {"product":i["product"],"description":i["description"]}
-
+            disks_logicalname_dict[i["logicalname"]] = {
+                "product": i["product"],
+                "description": i["description"],
+            }
 
     try:
         s.init_tty()
@@ -51,9 +63,10 @@ if __name__ == "__main__":
 
         # DropDown and ListBox widgets
         d.add(1, 1, "選擇硬碟:")
-        w_dropdown_target_disk = wgs.WDropDown(15, ["All"] + list(disks_logicalname_dict.keys()), dropdown_h=6)
+        w_dropdown_target_disk = wgs.WDropDown(
+            15, ["All"] + list(disks_logicalname_dict.keys()), dropdown_h=6
+        )
         d.add(11, 1, w_dropdown_target_disk)
-
 
         d.add(1, 3, "List:")
         w_listbox = wgs.WListBox(24, 6, choices)
@@ -107,5 +120,3 @@ if __name__ == "__main__":
     # os.system("sudo dd of=/dev/null if=/dev/sda3 status=progress")
     # os.system("sudo smartctl -a /dev/sda")
     # os.system("sudo fdisk -l")
-
-
