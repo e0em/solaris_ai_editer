@@ -12,11 +12,9 @@ import picotui.defs as defs
 
 def linux_cmd(command):
     import subprocess
-    print(command)
-    # output = subprocess.check_output(command, shell=True)
-    output = "excute:" + command 
-    # return output.decode()
-    return output
+
+    output = subprocess.check_output(command, shell=True)
+    return output.decode()
 
 
 def linux_cmd_json_dict(command):
@@ -28,6 +26,7 @@ def linux_cmd_json_dict(command):
 
 def linux_all_disk_list():
     import subprocess
+
     result = subprocess.check_output(hdd_test_cmd_disk_device_list, shell=True)
     output = result.decode().split("\n")
     print(output)
@@ -36,12 +35,14 @@ def linux_all_disk_list():
 
 def hdd_test_compose(disk_name, action):
     hdd_test_cmd_partition_info = "sudo sgdisk -p {device_name}"
-    hdd_test_cmd_clean_disk_partition_head = "sudo dd if=/dev/zero of={device_name} status=progress bs=512 count=34"
+    hdd_test_cmd_clean_disk_partition_head = (
+        "sudo dd if=/dev/zero of={device_name} status=progress bs=512 count=34"
+    )
     hdd_test_cmd_clean_disk_partition_tail = "sudo dd if=/dev/zero of={device_name} bs=512 count=34 seek=$((`sudo /sbin/blockdev --getsz /dev/sdb` - 34))"
     hdd_test_cmd_read_whole_disk = "sudo dd if={device_name} of=/dev/null status=progress bs=256M conv=sync,noerror"
     hdd_test_cmd_write_whole_disk = "sudo dd if=/dev/zero of={device_name} status=progress bs=256M conv=sync,noerror"
     hdd_test_cmd_format_whole_disk = "sudo mkfs.ext4 {device_name}"
-    hdd_test_cmd_smartctl = "sudo smartctl -x {device_name}"
+    hdd_test_cmd_smartctl = "sudo smartctl -x -a -i {device_name}"
     if action == "partition_info":
         return hdd_test_cmd_partition_info.format(device_name=disk_name)
     elif action == "clean_disk_partition_head":
@@ -58,6 +59,8 @@ def hdd_test_compose(disk_name, action):
         return hdd_test_cmd_smartctl.format(device_name=disk_name)
     else:
         return ""
+
+
 if __name__ == "__main__":
     import os
 
@@ -141,16 +144,24 @@ if __name__ == "__main__":
     action_type = w_dropdown_test_type.items[w_dropdown_test_type.get()]
     print("執行內容：", action_type)
     if action_type == "Read All Disk":
-        output_message = linux_cmd(hdd_test_compose(target_disk_device_name, "read_whole_disk"))
+        output_message = linux_cmd(
+            hdd_test_compose(target_disk_device_name, "read_whole_disk")
+        )
     elif action_type == "Write All Disk":
-        output_message = linux_cmd(hdd_test_compose(target_disk_device_name, "write_whole_disk"))
+        output_message = linux_cmd(
+            hdd_test_compose(target_disk_device_name, "write_whole_disk")
+        )
     elif action_type == "mke2fs Disk":
-        output_message = linux_cmd(hdd_test_compose(target_disk_device_name, "format_whole_disk"))
+        output_message = linux_cmd(
+            hdd_test_compose(target_disk_device_name, "format_whole_disk")
+        )
     elif action_type == "Read SMART info":
-        output_message = linux_cmd(hdd_test_compose(target_disk_device_name, "smartctl"))
+        output_message = linux_cmd(
+            hdd_test_compose(target_disk_device_name, "smartctl")
+        )
     else:
         output_message = "No Action"
-    
+
     print("output_message:", output_message)
     # print(output_message)
     # 以選的的硬碟 讀取 smartctl info
