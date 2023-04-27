@@ -108,7 +108,7 @@ if __name__ == "__main__":
 
         w_dropdown_target_disk.on("changed", dropdown_changed)
 
-        d.add(1, 10, "選擇檢測:")
+        d.add(1, 13, "選擇檢測:")
         w_dropdown_test_type = wgs.WDropDown(
             24,
             [
