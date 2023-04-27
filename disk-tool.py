@@ -56,37 +56,7 @@ def hdd_test_compose(disk_name, action):
     else:
         return ""
 if __name__ == "__main__":
-<<<<<<< HEAD
-=======
     import os
-
-    s = scn.Screen()
-
-    dev_disk = "/dev/"
-    disk_list = []
-    for file in os.listdir(dev_disk):
-        if file.startswith("sd"):
-            disk_list.append(file)
-
-    choices = disk_list
-    disks_info_dict = linux_cmd_json_dict("sudo lshw -c disk -json -quiet")
-    disks_logicalname_dict = {}
-    for i in disks_info_dict:
-        print(i["product"], i["logicalname"], i["description"])
-        if isinstance(i["logicalname"], list):
-            disks_logicalname_dict[i["logicalname"][0]] = {
-                "product": i["product"],
-                "description": i["description"],
-            }
-        else:
-            disks_logicalname_dict[i["logicalname"]] = {
-                "product": i["product"],
-                "description": i["description"],
-            }
-=======
-    import subprocess
-    import json
->>>>>>> 05f4635eb11aec20dbf376ff0601a450c17de619
 
     hdd_test_cmd_disk_device_list = "sudo lshw -c disk -short -quiet |grep disk"
     s = scn.Screen()
@@ -95,7 +65,6 @@ if __name__ == "__main__":
         single_disk_info = re.split(r"\s{2,}", i)
         if i:
             disks_dict[single_disk_info[3]] = single_disk_info[1]
->>>>>>> 4b20127412a3936c78e483345ee7196a214c6719
 
     print(disks_dict)
     # choices = disks_dict.items()
@@ -111,17 +80,7 @@ if __name__ == "__main__":
 
         # DropDown and ListBox widgets
         d.add(1, 1, "選擇硬碟:")
-<<<<<<< HEAD
         w_dropdown_target_disk = wgs.WDropDown(15, ["All"] + choices, dropdown_h=6)
-=======
-        w_dropdown_target_disk = wgs.WDropDown(
-<<<<<<< HEAD
-            15, ["All"] + list(disks_logicalname_dict.keys()), dropdown_h=6
-=======
-            15, ["All"] + list(disks_dict.items()), dropdown_h=6
->>>>>>> 4b20127412a3936c78e483345ee7196a214c6719
-        )
->>>>>>> 05f4635eb11aec20dbf376ff0601a450c17de619
         d.add(11, 1, w_dropdown_target_disk)
 
         d.add(1, 3, "List:")
