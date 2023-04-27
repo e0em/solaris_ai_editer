@@ -122,10 +122,10 @@ if __name__ == "__main__":
 
         d.add(11, 10, w_dropdown_test_type)
         b = wgs.WButton(8, "OK")
-        d.add(2, 12, b)
+        d.add(2, 14, b)
         b.finish_dialog = "ACTION_OK"
         b = wgs.WButton(8, "Cancel")
-        d.add(12, 12, b)
+        d.add(12, 14, b)
         b.finish_dialog = "ACTION_CANCEL"
 
         res = d.loop()
