@@ -13,8 +13,12 @@ import picotui.defs as defs
 def linux_cmd(command):
     import subprocess
 
-    output = subprocess.check_output(command, shell=True)
-    return output.decode()
+    try:
+        output = subprocess.check_output(command, shell=True)
+        return output.decode()
+    except subprocess.CalledProcessError as e:
+        print(e.output)
+        raise e
 
 
 def linux_cmd_json_dict(command):
@@ -27,10 +31,10 @@ def linux_cmd_json_dict(command):
 def linux_all_disk_list():
     import subprocess
 
-    result = subprocess.check_output(hdd_test_cmd_disk_device_list, shell=True)
-    output = result.decode().split("\n")
-    print(output)
-    return output
+    lsblk_result = "lsblk -S -J -o SERIAL,NAME,TRAN,WWN,VENDOR,MODEL,path,type"
+    hdd_test_cmd_disk_device_dict = linux_cmd_json_dict(lsblk_result)["blockdevices"]
+    print(hdd_test_cmd_disk_device_dict)
+    return hdd_test_cmd_disk_device_dict
 
 
 def hdd_test_compose(disk_name, action):
@@ -64,17 +68,20 @@ def hdd_test_compose(disk_name, action):
 if __name__ == "__main__":
     import os
 
-    hdd_test_cmd_disk_device_list = "sudo lshw -c disk -short -quiet |grep disk"
     s = scn.Screen()
     disks_dict = {}
+    disk_interfaces = set()
+    disk_device_name_list = []
+    disk_model_and_device_name = []
     for i in linux_all_disk_list():
-        single_disk_info = re.split(r"\s{2,}", i)
-        if i:
-            disks_dict[single_disk_info[3]] = single_disk_info[1]
+        disks_dict[i["name"]] = i
+        disk_interfaces.add(i["tran"])
+        disk_device_name_list.append(i["path"])
+        disk_model_and_device_name.append(i["model"] + "," + i["name"])
 
     print(disks_dict)
     # choices = disks_dict.items()
-    choices = list(disks_dict.keys())
+    choices = list(disk_interfaces)
 
     try:
         s.init_tty()
@@ -86,19 +93,26 @@ if __name__ == "__main__":
 
         # DropDown and ListBox widgets
         d.add(1, 1, "選擇硬碟:")
+        # 下拉選單，寬 15，選單內容為 choices，dropdown_h 高度6
         w_dropdown_target_disk = wgs.WDropDown(15, ["All"] + choices, dropdown_h=6)
+        # 將下拉過濕工具放置地方，左上角 Col:1 Row:11
         d.add(11, 1, w_dropdown_target_disk)
 
         d.add(1, 3, "List:")
-        w_listbox = wgs.WListBox(24, 6, choices)
+        w_listbox = wgs.WListBox(24, 6, disk_model_and_device_name)
         d.add(1, 4, w_listbox)
 
         # Filter the ListBox based on the DropDown selection
         def dropdown_changed(w):
             new_choices = []
-            for i in range(len(choices)):
-                if w.items[w.choice] == "All" or w.items[w.choice] in choices[i]:
-                    new_choices.append(choices[i])
+            for i in disks_dict.keys():
+                if (
+                    w.items[w.choice] == "All"
+                    or w.items[w.choice] == disks_dict[i]["tran"]
+                ):
+                    new_choices.append(
+                        disks_dict[i]["model"] + "," + disks_dict[i]["name"]
+                    )
 
             # As we're going to set completely new items, reset current/top item of the widget
             w_listbox.top_line = 0
@@ -112,15 +126,16 @@ if __name__ == "__main__":
         w_dropdown_test_type = wgs.WDropDown(
             24,
             [
+                "No Action",
                 "Read All Disk",
                 "Write All Disk",
                 "mke2fs Disk",
                 "Read SMART info",
             ],
-            dropdown_h=6,
+            dropdown_h=7,
         )
 
-        d.add(11, 10, w_dropdown_test_type)
+        d.add(11, 13, w_dropdown_test_type)
         b = wgs.WButton(8, "OK")
         d.add(2, 14, b)
         b.finish_dialog = "ACTION_OK"
@@ -138,7 +153,8 @@ if __name__ == "__main__":
     print("Result:", w_listbox.get_cur_line())
     # 以選定的硬碟 設定 device name
     target_disk_name = w_listbox.get_cur_line()
-    target_disk_device_name = disks_dict[target_disk_name]
+    print(disks_dict)
+    target_disk_device_name = disks_dict[target_disk_name.split(",")[1]]["path"]
     print("選定硬碟:", target_disk_device_name)
     # 以選定的action 設定行動指令
     action_type = w_dropdown_test_type.items[w_dropdown_test_type.get()]
