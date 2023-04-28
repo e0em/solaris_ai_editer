@@ -128,6 +128,7 @@ if __name__ == "__main__":
             24,
             [
                 "No Action",
+                "Read Disk Partition info",
                 "Read All Disk",
                 "Write All Disk",
                 "mke2fs Disk",
