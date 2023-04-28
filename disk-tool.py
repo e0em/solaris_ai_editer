@@ -43,7 +43,12 @@ def hdd_test_compose(disk_name, action):
     hdd_test_cmd_clean_disk_partition_head = (
         "sudo dd if=/dev/zero of={device_name} status=progress bs=512 count=34"
     )
-    hdd_test_cmd_clean_disk_partition_tail = "sudo dd if=/dev/zero of={device_name} bs=512 count=34 seek=$((`sudo /sbin/blockdev --getsz /dev/sdb` - 34))"
+    hdd_test_cmd_clean_disk_partition_tail = (
+        "sudo dd if=/dev/zero of={device_name} bs=512 count=34 seek={seek_no}"
+    )
+    hdd_test_cmd_clean_disk_partition_tail_seek = (
+        "sudo /sbin/blockdev --getsz {device_name}"
+    )
     hdd_test_cmd_read_whole_disk = "sudo dd if={device_name} of=/dev/null status=progress bs=256M conv=sync,noerror"
     hdd_test_cmd_write_whole_disk = "sudo dd if=/dev/zero of={device_name} status=progress bs=256M conv=sync,noerror"
     hdd_test_cmd_format_whole_disk = "sudo mkfs.ext4 {device_name}"
@@ -55,8 +60,11 @@ def hdd_test_compose(disk_name, action):
             device_name=disk_name
         )
     elif action == "clean_disk_partition_tail":
+        seek_no = linux_cmd(
+            hdd_test_cmd_clean_disk_partition_tail_seek.format(device_name=disk_name)
+        )
         return_cmd = hdd_test_cmd_clean_disk_partition_tail.format(
-            device_name=disk_name
+            device_name=disk_name, seek_no=int(seek_no) - 34
         )
     elif action == "read_whole_disk":
         return_cmd = hdd_test_cmd_read_whole_disk.format(device_name=disk_name)
