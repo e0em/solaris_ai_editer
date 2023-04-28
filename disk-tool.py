@@ -49,21 +49,28 @@ def hdd_test_compose(disk_name, action):
     hdd_test_cmd_format_whole_disk = "sudo mkfs.ext4 {device_name}"
     hdd_test_cmd_smartctl = "sudo smartctl -x -a -T permissive -i {device_name}"
     if action == "partition_info":
-        return hdd_test_cmd_partition_info.format(device_name=disk_name)
+        return_cmd = hdd_test_cmd_partition_info.format(device_name=disk_name)
     elif action == "clean_disk_partition_head":
-        return hdd_test_cmd_clean_disk_partition_head.format(device_name=disk_name)
+        return_cmd = hdd_test_cmd_clean_disk_partition_head.format(
+            device_name=disk_name
+        )
     elif action == "clean_disk_partition_tail":
-        return hdd_test_cmd_clean_disk_partition_tail.format(device_name=disk_name)
+        return_cmd = hdd_test_cmd_clean_disk_partition_tail.format(
+            device_name=disk_name
+        )
     elif action == "read_whole_disk":
-        return hdd_test_cmd_read_whole_disk.format(device_name=disk_name)
+        return_cmd = hdd_test_cmd_read_whole_disk.format(device_name=disk_name)
     elif action == "write_whole_disk":
-        return hdd_test_cmd_write_whole_disk.format(device_name=disk_name)
+        return_cmd = hdd_test_cmd_write_whole_disk.format(device_name=disk_name)
     elif action == "format_whole_disk":
-        return hdd_test_cmd_format_whole_disk.format(device_name=disk_name)
+        return_cmd = hdd_test_cmd_format_whole_disk.format(device_name=disk_name)
     elif action == "smartctl":
-        return hdd_test_cmd_smartctl.format(device_name=disk_name)
+        return_cmd = hdd_test_cmd_smartctl.format(device_name=disk_name)
     else:
-        return ""
+        return_cmd = ""
+
+    print("執行指令：", return_cmd)
+    return return_cmd
 
 
 if __name__ == "__main__":
@@ -125,16 +132,19 @@ if __name__ == "__main__":
 
         d.add(1, 13, "選擇檢測:")
         w_dropdown_test_type = wgs.WDropDown(
-            24,
+            28,
             [
                 "No Action",
                 "Read Disk Partition info",
+                "Read SMART info",
                 "Read All Disk",
+                "Clean Disk Partition head",
+                "Clean Disk Partition tail",
+                "Clean Disk Partition all",
                 "Write All Disk",
                 "mke2fs Disk",
-                "Read SMART info",
             ],
-            dropdown_h=7,
+            dropdown_h=11,
         )
 
         d.add(11, 13, w_dropdown_test_type)
@@ -176,6 +186,29 @@ if __name__ == "__main__":
     elif action_type == "Read SMART info":
         output_message = linux_cmd(
             hdd_test_compose(target_disk_device_name, "smartctl")
+        )
+    elif action_type == "Read Disk Partition info":
+        output_message = linux_cmd(
+            hdd_test_compose(target_disk_device_name, "partition_info")
+        )
+    elif action_type == "Clean Disk Partition head":
+        output_message = linux_cmd(
+            hdd_test_compose(target_disk_device_name, "clean_disk_partition_head")
+        )
+    elif action_type == "Clean Disk Partition tail":
+        output_message = linux_cmd(
+            hdd_test_compose(target_disk_device_name, "clean_disk_partition_tail")
+        )
+    elif action_type == "Clean Disk Partition all":
+        output_message = linux_cmd(
+            hdd_test_compose(target_disk_device_name, "clean_disk_partition_head")
+        )
+        output_message = (
+            output_message
+            + " "
+            + linux_cmd(
+                hdd_test_compose(target_disk_device_name, "clean_disk_partition_tail")
+            )
         )
     else:
         output_message = "No Action"
