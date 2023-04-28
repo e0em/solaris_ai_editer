@@ -154,13 +154,18 @@ if __name__ == "__main__":
             ],
             dropdown_h=11,
         )
-
         d.add(11, 13, w_dropdown_test_type)
+        # 增加一個 checkbox  widget，左上角 Col:1 Row:14
+        w_checkbox = wgs.WCheckbox("save output to log file", True)
+        # 將 checkbox 放置地方，左上角 Col:1 Row:14
+        d.add(11, 14, w_checkbox)
+        # 境外按鈕，左上角 Col:8 Row:15
+
         b = wgs.WButton(8, "OK")
-        d.add(2, 14, b)
+        d.add(2, 15, b)
         b.finish_dialog = "ACTION_OK"
         b = wgs.WButton(8, "Cancel")
-        d.add(12, 14, b)
+        d.add(12, 15, b)
         b.finish_dialog = "ACTION_CANCEL"
 
         res = d.loop()
@@ -169,7 +174,9 @@ if __name__ == "__main__":
         s.cursor(True)
         s.disable_mouse()
         s.deinit_tty()
-
+    # 打印出 checkbox 的狀態
+    print("Show command output:", w_checkbox.choice)
+    # 打印出 w_listbox 的選擇中的結果
     print("Result:", w_listbox.get_cur_line())
     # 以選定的硬碟 設定 device name
     target_disk_name = w_listbox.get_cur_line()
@@ -222,6 +229,22 @@ if __name__ == "__main__":
         output_message = "No Action"
 
     print("output_message:", output_message)
+    # wcheckbox.choice 是否打勾 checkbox 如果是 將 output_message 存到 log file
+    if w_checkbox.choice:
+        import datetime
+
+        # today = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        today = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+        log_file_name = (
+            disks_dict[target_disk_name.split(",")[1]]["model"]
+            + "_"
+            + disks_dict[target_disk_name.split(",")[1]]["serial"]
+            + "_"
+            + today
+            + ".log"
+        )
+        with open(log_file_name, "a") as f:
+            f.write(output_message)
     # print(output_message)
     # 以選的的硬碟 讀取 smartctl info
     # print("Result:", w_dropdown_target_disk.items[w_dropdown_target_disk.get()])
