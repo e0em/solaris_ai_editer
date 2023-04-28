@@ -17,8 +17,9 @@ def linux_cmd(command):
         output = subprocess.check_output(command, shell=True)
         return output.decode()
     except subprocess.CalledProcessError as e:
-        print(e.output)
-        raise e
+        print(e.output.decode())
+        return e.output.decode()
+        # raise e
 
 
 def linux_cmd_json_dict(command):
@@ -46,7 +47,7 @@ def hdd_test_compose(disk_name, action):
     hdd_test_cmd_read_whole_disk = "sudo dd if={device_name} of=/dev/null status=progress bs=256M conv=sync,noerror"
     hdd_test_cmd_write_whole_disk = "sudo dd if=/dev/zero of={device_name} status=progress bs=256M conv=sync,noerror"
     hdd_test_cmd_format_whole_disk = "sudo mkfs.ext4 {device_name}"
-    hdd_test_cmd_smartctl = "sudo smartctl -x -a -i {device_name}"
+    hdd_test_cmd_smartctl = "sudo smartctl -x -a -T permissive -i {device_name}"
     if action == "partition_info":
         return hdd_test_cmd_partition_info.format(device_name=disk_name)
     elif action == "clean_disk_partition_head":
