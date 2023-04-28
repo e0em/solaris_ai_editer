@@ -1,4 +1,4 @@
-#
+#! env python3
 # This example shows how to change the items of a ListBox widget
 # when the current selection of a DropDown widget changes.
 #
