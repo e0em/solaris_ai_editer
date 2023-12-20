@@ -93,7 +93,8 @@ if __name__ == "__main__":
         disks_dict[i["name"]] = i
         disk_interfaces.add(i["tran"])
         disk_device_name_list.append(i["path"])
-        disk_model_and_device_name.append(i["model"] + "," + i["name"])
+        disk_model_and_device_name.append(i["name"] + "," + i["model"])
+        #disk_model_and_device_name.append(i["model"] + "," + i["name"])
 
     print(disks_dict)
     # choices = disks_dict.items()
@@ -115,7 +116,7 @@ if __name__ == "__main__":
         d.add(11, 1, w_dropdown_target_disk)
 
         d.add(1, 3, "List:")
-        w_listbox = wgs.WListBox(24, 6, disk_model_and_device_name)
+        w_listbox = wgs.WListBox(40, 6, disk_model_and_device_name)
         d.add(1, 4, w_listbox)
 
         # Filter the ListBox based on the DropDown selection
@@ -127,7 +128,7 @@ if __name__ == "__main__":
                     or w.items[w.choice] == disks_dict[i]["tran"]
                 ):
                     new_choices.append(
-                        disks_dict[i]["model"] + "," + disks_dict[i]["name"]
+                        disks_dict[i]["name"] + "," + disks_dict[i]["model"]
                     )
 
             # As we're going to set completely new items, reset current/top item of the widget
@@ -143,13 +144,15 @@ if __name__ == "__main__":
             28,
             [
                 "No Action",
+                "All in Once",
                 "Read Disk Partition info",
                 "Read SMART info",
                 "Read All Disk",
+                "Write All Disk",
+                "Write&Read All Disk",
                 "Clean Disk Partition head",
                 "Clean Disk Partition tail",
                 "Clean Disk Partition all",
-                "Write All Disk",
                 "mke2fs Disk",
             ],
             dropdown_h=11,
@@ -181,7 +184,7 @@ if __name__ == "__main__":
     # 以選定的硬碟 設定 device name
     target_disk_name = w_listbox.get_cur_line()
     print(disks_dict)
-    target_disk_device_name = disks_dict[target_disk_name.split(",")[1]]["path"]
+    target_disk_device_name = disks_dict[target_disk_name.split(",")[0]]["path"]
     print("選定硬碟:", target_disk_device_name)
     # 以選定的action 設定行動指令
     action_type = w_dropdown_test_type.items[w_dropdown_test_type.get()]
@@ -194,6 +197,25 @@ if __name__ == "__main__":
         output_message = linux_cmd(
             hdd_test_compose(target_disk_device_name, "write_whole_disk")
         )
+    elif action_type == "Write&Read All Disk":
+        output_message = linux_cmd(
+            hdd_test_compose(target_disk_device_name, "write_whole_disk")
+        )
+        output_message_2 = linux_cmd(
+            hdd_test_compose(target_disk_device_name, "read_whole_disk")
+        )
+        output_message = output_message + "\n" + output_message_2 
+    elif action_type == "All in Once":
+        output_message_1 = linux_cmd(
+            hdd_test_compose(target_disk_device_name, "smartctl")
+        )
+        output_message_2 = linux_cmd(
+            hdd_test_compose(target_disk_device_name, "write_whole_disk")
+        )
+        output_message_3 = linux_cmd(
+            hdd_test_compose(target_disk_device_name, "read_whole_disk")
+        )
+        output_message = output_message_1 + "\n" + output_message_2 + "\n" + output_message_3
     elif action_type == "mke2fs Disk":
         output_message = linux_cmd(
             hdd_test_compose(target_disk_device_name, "format_whole_disk")
@@ -236,10 +258,10 @@ if __name__ == "__main__":
         # today = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         today = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
         log_file_name = (
-            disks_dict[target_disk_name.split(",")[1]]["model"]
-            + "_"
-            + disks_dict[target_disk_name.split(",")[1]]["serial"]
-            + "_"
+            disks_dict[target_disk_name.split(",")[0]]["model"].replace(" ", "_")
+            + "-"
+            + disks_dict[target_disk_name.split(",")[0]]["serial"].replace(" ", "_")
+            + "-"
             + today
             + ".log"
         )
