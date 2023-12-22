@@ -93,7 +93,7 @@ if __name__ == "__main__":
         disks_dict[i["name"]] = i
         disk_interfaces.add(i["tran"])
         disk_device_name_list.append(i["path"])
-        disk_model_and_device_name.append(i["name"] + "," + i["model"])
+        disk_model_and_device_name.append(i["name"] + "," + i["model"] + "," + i["serial"])
         #disk_model_and_device_name.append(i["model"] + "," + i["name"])
 
     print(disks_dict)
@@ -116,7 +116,7 @@ if __name__ == "__main__":
         d.add(11, 1, w_dropdown_target_disk)
 
         d.add(1, 3, "List:")
-        w_listbox = wgs.WListBox(40, 6, disk_model_and_device_name)
+        w_listbox = wgs.WListBox(60, 6, disk_model_and_device_name)
         d.add(1, 4, w_listbox)
 
         # Filter the ListBox based on the DropDown selection
@@ -128,7 +128,7 @@ if __name__ == "__main__":
                     or w.items[w.choice] == disks_dict[i]["tran"]
                 ):
                     new_choices.append(
-                        disks_dict[i]["name"] + "," + disks_dict[i]["model"]
+                            disks_dict[i]["name"] + "," + disks_dict[i]["model"] + "," + disks_dict[i]["serial"]
                     )
 
             # As we're going to set completely new items, reset current/top item of the widget
